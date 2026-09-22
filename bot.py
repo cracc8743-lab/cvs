@@ -438,17 +438,18 @@ async def postshop(interaction: discord.Interaction):
         description="Choose a tier and click **Buy** to place an order."
     )
 
-    for tier in stock:
-        price = customer_price(tier["min"], tier["max"])
+for tier_name, quantity in stock.items():
+    min_price, max_price = map(int, tier_name.split("-"))
+    price = customer_price(min_price, max_price)
 
-        embed.add_field(
-            name=tier["label"],
-            value=(
-                f"💵 Price: **${price:.2f}**\n"
-                f"📦 Stock: **{tier['count_display']}**"
-            ),
-            inline=True
-        )
+    embed.add_field(
+        name=f"${min_price}-${max_price}",
+        value=(
+            f"💵 Price: **${price:.2f}**\n"
+            f"📦 Stock: **{quantity}**"
+        ),
+        inline=True
+    )
 
     embed.set_footer(
         text="Click Buy below to start your order."
