@@ -438,30 +438,30 @@ async def postshop(interaction: discord.Interaction):
         description="Choose a tier and click **Buy** to place an order."
     )
 
-for tier_name, quantity in stock.items():
-    min_price, max_price = map(int, tier_name.split("-"))
-    price = customer_price(min_price, max_price)
-
-    embed.add_field(
-        name=f"${min_price}-${max_price}",
-        value=(
-            f"💵 Price: **${price:.2f}**\n"
-            f"📦 Stock: **{quantity}**"
-        ),
-        inline=True
-    )
-
-    embed.set_footer(
-        text="Click Buy below to start your order."
-    )
-
-    await shop_channel.send(
-        embed=embed,
-        view=PublicShopView()
-    )
-
-    await interaction.followup.send(
-        "✅ Shop posted!",
-        ephemeral=True
-    )
+    for tier_name, quantity in stock.items():
+        min_price, max_price = map(int, tier_name.split("-"))
+        price = customer_price(min_price, max_price)
+    
+        embed.add_field(
+            name=f"${min_price}-${max_price}",
+            value=(
+                f"💵 Price: **${price:.2f}**\n"
+                f"📦 Stock: **{quantity}**"
+            ),
+            inline=True
+        )
+    
+        embed.set_footer(
+            text="Click Buy below to start your order."
+        )
+    
+        await shop_channel.send(
+            embed=embed,
+            view=PublicShopView()
+        )
+    
+        await interaction.followup.send(
+            "✅ Shop posted!",
+            ephemeral=True
+        )
 bot.run(DISCORD_TOKEN)
