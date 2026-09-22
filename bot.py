@@ -263,45 +263,41 @@ class ApprovalView(discord.ui.View):
             pass
 class TierSelect(discord.ui.Select):
     def __init__(self, stock):
-        options = []
+    options = []
 
-        for tier in stock[:25]:
-            price = customer_price(tier["min"], tier["max"])
+    for tier_name, quantity in list(stock.items())[:25]:
+        min_price, max_price = map(int, tier_name.split("-"))
+        price = customer_price(min_price, max_price)
 
-            options.append(
-                discord.SelectOption(
-                    label=f"{tier['label']} — ${price:.2f}",
-                    description=f"Stock: {tier['count_display']}",
-                    value=f"{tier['min']}:{tier['max']}"
-                )
+        options.append(
+            discord.SelectOption(
+                label=f"${min_price}-${max_price} → ${price:.2f}",
+                description=f"Stock: {quantity}",
+                value=f"{min_price}:{max_price}"
             )
-
-        super().__init__(
-            placeholder="Choose a CVS tier...",
-            min_values=1,
-            max_values=1,
-            options=options
         )
 
-        self.stock = stock
+    super().__init__(
+        placeholder="Choose a CVS tier...",
+        min_values=1,
+        max_values=1,
+        options=options
+    )
 
-    async def callback(self, interaction: discord.Interaction):
-        tier_min, tier_max = map(int, self.values[0].split(":"))
+    self.stock = stock
 
-        tier = next(
-            (
-                t for t in self.stock
-                if t["min"] == tier_min and t["max"] == tier_max
-            ),
-            None
-        )
+async def callback(self, interaction: discord.Interaction):
+    tier_min, tier_max = map(int, self.values[0].split(":"))
+    tier_name = f"{tier_min}-{tier_max}"
+    quantity = self.stock.get(tier_name, 0)
 
-        if tier is None:
-            await interaction.response.send_message(
-                "❌ That tier is no longer available.",
-                ephemeral=True
-            )
-            return
+    tier = {
+        "min": tier_min,
+        "max": tier_max,
+        "label": f"${tier_min}-${tier_max}",
+        "count_display": quantity
+    }
+
 
         price = customer_price(tier_min, tier_max)
 
