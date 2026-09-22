@@ -263,45 +263,43 @@ class ApprovalView(discord.ui.View):
             pass
 class TierSelect(discord.ui.Select):
     def __init__(self, stock):
-    options = []
+        options = []
 
-    for tier_name, quantity in list(stock.items())[:25]:
-        min_price, max_price = map(int, tier_name.split("-"))
-        price = customer_price(min_price, max_price)
+        for tier_name, quantity in list(stock.items())[:25]:
+            min_price, max_price = map(int, tier_name.split("-"))
+            price = customer_price(min_price, max_price)
 
-        options.append(
-            discord.SelectOption(
-                label=f"${min_price}-${max_price} → ${price:.2f}",
-                description=f"Stock: {quantity}",
-                value=f"{min_price}:{max_price}"
+            options.append(
+                discord.SelectOption(
+                    label=f"${min_price}-${max_price} → ${price:.2f}",
+                    description=f"Stock: {quantity}",
+                    value=f"{min_price}:{max_price}"
+                )
             )
+
+        super().__init__(
+            placeholder="Choose a CVS tier...",
+            min_values=1,
+            max_values=1,
+            options=options
         )
 
-    super().__init__(
-        placeholder="Choose a CVS tier...",
-        min_values=1,
-        max_values=1,
-        options=options
-    )
+        self.stock = stock
 
-    self.stock = stock
+    async def callback(self, interaction: discord.Interaction):
+        tier_min, tier_max = map(int, self.values[0].split(":"))
+        tier_name = f"{tier_min}-{tier_max}"
+        quantity = self.stock.get(tier_name, 0)
 
-async def callback(self, interaction: discord.Interaction):
-    tier_min, tier_max = map(int, self.values[0].split(":"))
-    tier_name = f"{tier_min}-{tier_max}"
-    quantity = self.stock.get(tier_name, 0)
-
-    tier = {
-        "min": tier_min,
-        "max": tier_max,
-        "label": f"${tier_min}-${tier_max}",
-        "count_display": quantity
-    }
-
+        tier = {
+            "min": tier_min,
+            "max": tier_max,
+            "label": f"${tier_min}-${tier_max}",
+            "count_display": quantity
+        }
 
         price = customer_price(tier_min, tier_max)
 
-               # Tell the customer privately that the order is waiting
         await interaction.response.send_message(
             f"✅ **Order submitted!**\n\n"
             f"Tier: **{tier['label']}**\n"
@@ -311,7 +309,6 @@ async def callback(self, interaction: discord.Interaction):
             ephemeral=True
         )
 
-        # Send approval request to private orders channel
         orders_channel = interaction.client.get_channel(ORDERS_CHANNEL_ID)
 
         if orders_channel is None:
@@ -326,7 +323,7 @@ async def callback(self, interaction: discord.Interaction):
             f"Buyer: {interaction.user.mention}\n"
             f"User ID: `{interaction.user.id}`\n"
             f"Tier: **{tier['label']}**\n"
-            f"Customer Price: **${price:.2f}**\n\n"
+            f"Customer Price: **${price:.2f}**\n"
             f"Confirm payment before approving.",
             view=ApprovalView(
                 interaction.user,
@@ -336,9 +333,6 @@ async def callback(self, interaction: discord.Interaction):
                 price
             )
         )
-
-
-
 class TierView(discord.ui.View):
     def __init__(self, stock):
         super().__init__(timeout=300)
