@@ -7,7 +7,7 @@ import aiohttp
 DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
 API_KEY = os.getenv("CVS_API_KEY")
 
-BASE_URL = "https://puff-cvs-api-production.up.railway.app"
+BASE_URL = "https://cvs-api-production-b67e.up.railway.app"
 OWNER_ID = 1500626713065820273
 ORDERS_CHANNEL_ID = 1551988175239647303
 SHOP_CHANNEL_ID = 1545250548045975622
